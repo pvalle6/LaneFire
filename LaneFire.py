@@ -42,8 +42,8 @@ class Experiment:
 
         self.exp_info = {"Name": None,
                          "Data Points Originally Provided": None, "Number of Additional Samples Added": None}
-        self.independent_var_n = None
-        self.dependent_var_n = None
+        self.var_n = None
+        self.obj_n = None
         self.domain = None
 
     def print_info(self):
@@ -59,7 +59,7 @@ def plot_clean(provided_exp, informed_candidates):
     # """
     # This function plots the cleaned data with proposed experimental data including a SD bar around each.
     #
-    # It currently is programmed for 1 independent variable and 5 dependent variables. I will work on updating this.
+    # It currently is programmed for 1 var and 5 obj. I will work on updating this.
     #
     # :param provided_exp: previously provided experimental data to BoFire
     # :param informed_candidates: predicted experimental data by BoFire
@@ -152,14 +152,14 @@ def print_wo(combined_predictions):
 
 
 class LaneFireParam:
-    def __init__(self, ind_names, dep_names, ind_bound_tuples, dep_bound_tuples, list_ind_weights, list_dep_weights,
+    def __init__(self, var_names, obj_names, var_bound_tuples, obj_bound_tuples, list_var_weights, list_obj_weights,
                  list_opt_types):
-        self.ind_n = ind_names
-        self.dep_n = dep_names
-        self.dep_bound_tuples = dep_bound_tuples
-        self.ind_bound_tuples = ind_bound_tuples
-        self.list_ind_weights = list_ind_weights
-        self.list_dep_weights = list_dep_weights
+        self.var_n = var_names
+        self.obj_n = obj_names
+        self.obj_bound_tuples = obj_bound_tuples
+        self.var_bound_tuples = var_bound_tuples
+        self.list_var_weights = list_var_weights
+        self.list_obj_weights = list_obj_weights
         self.list_opt_types = list_opt_types
 
 def bofire_setup_pipe(LaneFireParam):
@@ -175,21 +175,21 @@ def bofire_setup_pipe(LaneFireParam):
     This is also a butchered setup, there is definitely a better way to implement this. 
     """
 
-    x1 = ContinuousInput(key=LaneFireParam.ind_n[0], bounds=LaneFireParam.ind_bound_tuples[0])
+    x1 = ContinuousInput(key=LaneFireParam.var_n[0], bounds=LaneFireParam.var_bound_tuples[0])
     input_features = Inputs(features=[x1])
 
-    if len(LaneFireParam.ind_bound_tuples) >= 2:
-        x2 = ContinuousInput(key=LaneFireParam.ind_n[1], bounds=LaneFireParam.ind_bound_tuples[1])
-    if len(LaneFireParam.ind_bound_tuples) >= 3:
-        x3 = ContinuousInput(key=LaneFireParam.ind_n[2], bounds=LaneFireParam.ind_bound_tuples[2])
+    if len(LaneFireParam.var_bound_tuples) >= 2:
+        x2 = ContinuousInput(key=LaneFireParam.var_n[1], bounds=LaneFireParam.var_bound_tuples[1])
+    if len(LaneFireParam.var_bound_tuples) >= 3:
+        x3 = ContinuousInput(key=LaneFireParam.var_n[2], bounds=LaneFireParam.var_bound_tuples[2])
         input_features = Inputs(features=[x1, x2, x3])
-    if len(LaneFireParam.ind_bound_tuples) >= 4:
-        x4 = ContinuousInput(key=LaneFireParam.ind_n[3], bounds=LaneFireParam.ind_bound_tuples[3])
+    if len(LaneFireParam.var_bound_tuples) >= 4:
+        x4 = ContinuousInput(key=LaneFireParam.var_n[3], bounds=LaneFireParam.var_bound_tuples[3])
         input_features = Inputs(features=[x1, x2, x3, x4])
-    if len(LaneFireParam.ind_bound_tuples) >= 5:
-        x5 = ContinuousInput(key=LaneFireParam.ind_n[4], bounds=LaneFireParam.ind_bound_tuples[4])
+    if len(LaneFireParam.var_bound_tuples) >= 5:
+        x5 = ContinuousInput(key=LaneFireParam.var_n[4], bounds=LaneFireParam.var_bound_tuples[4])
         input_features = Inputs(features=[x1, x2, x3, x4,x5])
-    if len(LaneFireParam.ind_bound_tuples) >= 6:
+    if len(LaneFireParam.var_bound_tuples) >= 6:
         print("TOO MANY INDEPENDENT VARIABLES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
 
 
@@ -198,42 +198,42 @@ def bofire_setup_pipe(LaneFireParam):
     """
 
     objective1 = MaximizeObjective(
-        w=LaneFireParam.list_dep_weights[0],
-        bounds=LaneFireParam.dep_bound_tuples[0])
-    y1 = ContinuousOutput(key=LaneFireParam.dep_n[0], objective=objective1)
+        w=LaneFireParam.list_obj_weights[0],
+        bounds=LaneFireParam.obj_bound_tuples[0])
+    y1 = ContinuousOutput(key=LaneFireParam.obj_n[0], objective=objective1)
 
     output_features = Outputs(features=[y1])
 
-    if len(LaneFireParam.dep_n) >= 2:
+    if len(LaneFireParam.obj_n) >= 2:
         objective2 = MaximizeObjective(
-            w=LaneFireParam.list_dep_weights[1],
-            bounds=LaneFireParam.dep_bound_tuples[1])
-        y2 = ContinuousOutput(key=LaneFireParam.dep_n[1], objective=objective2)
+            w=LaneFireParam.list_obj_weights[1],
+            bounds=LaneFireParam.obj_bound_tuples[1])
+        y2 = ContinuousOutput(key=LaneFireParam.obj_n[1], objective=objective2)
 
         output_features = Outputs(features=[y1, y2])
-    if len(LaneFireParam.dep_n) >= 3:
+    if len(LaneFireParam.obj_n) >= 3:
         objective3 = MaximizeObjective(
-            w=LaneFireParam.list_dep_weights[2],
-            bounds=LaneFireParam.dep_bound_tuples[2])
-        y3 = ContinuousOutput(key=LaneFireParam.dep_n[2], objective=objective3)
+            w=LaneFireParam.list_obj_weights[2],
+            bounds=LaneFireParam.obj_bound_tuples[2])
+        y3 = ContinuousOutput(key=LaneFireParam.obj_n[2], objective=objective3)
 
         output_features = Outputs(features=[y1, y2, y3])
-    if len(LaneFireParam.dep_n) >= 4:
+    if len(LaneFireParam.obj_n) >= 4:
         objective4 = MaximizeObjective(
-            w=LaneFireParam.list_dep_weights[3],
-            bounds=LaneFireParam.dep_bound_tuples[3])
-        y4 = ContinuousOutput(key=LaneFireParam.dep_n[3], objective=objective4)
+            w=LaneFireParam.list_obj_weights[3],
+            bounds=LaneFireParam.obj_bound_tuples[3])
+        y4 = ContinuousOutput(key=LaneFireParam.obj_n[3], objective=objective4)
 
         output_features = Outputs(features=[y1, y2, y3, y4])
-    if len(LaneFireParam.dep_n) >= 5:
+    if len(LaneFireParam.obj_n) >= 5:
         objective5 = MaximizeObjective(
-            w=LaneFireParam.list_dep_weights[4],
-            bounds=LaneFireParam.dep_bound_tuples[4])
-        y5 = ContinuousOutput(key=LaneFireParam.dep_n[4], objective=objective5)
+            w=LaneFireParam.list_obj_weights[4],
+            bounds=LaneFireParam.obj_bound_tuples[4])
+        y5 = ContinuousOutput(key=LaneFireParam.obj_n[4], objective=objective5)
 
         output_features = Outputs(features=[y1, y2, y3, y4, y5])
 
-    if len(LaneFireParam.dep_n) >= 6:
+    if len(LaneFireParam.obj_n) >= 6:
         print("TOO MANY OBJECTIVES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
     """
        No further objectives are included as I don't think there is a situation that needs this much

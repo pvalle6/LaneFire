@@ -109,28 +109,28 @@ class LaneFireGUI:
         self.data_cleaning_label = tk.Label(
             self.Data_Cleaning, text="Data Cleaning Window \n See instructions README.txt for format").grid()
 
-        self.dc_ind_range_col = tk.StringVar()
-        self.dc_instr_ind_col = tk.Label(self.Data_Cleaning, text="Insert Column Range for Variables (X)").grid()
-        self.dc_ind_col = tk.Entry(self.Data_Cleaning, textvariable=self.dc_ind_range_col).grid()
+        self.dc_var_range_col = tk.StringVar()
+        self.dc_instr_var_col = tk.Label(self.Data_Cleaning, text="Insert Column Range for Variables (X)").grid()
+        self.dc_var_col = tk.Entry(self.Data_Cleaning, textvariable=self.dc_var_range_col).grid()
 
         self.dc_range_row = tk.StringVar()
-        self.dc_instr_ind_row = tk.Label(self.Data_Cleaning, text="Insert Row Range for Variables (X)").grid()
-        self.dc_ind_row = tk.Entry(self.Data_Cleaning, textvariable=self.dc_range_row).grid()
+        self.dc_instr_var_row = tk.Label(self.Data_Cleaning, text="Insert Row Range for Variables (X)").grid()
+        self.dc_var_row = tk.Entry(self.Data_Cleaning, textvariable=self.dc_range_row).grid()
 
-        self.dc_dep_range_col = tk.StringVar()
-        self.dc_instr_dep_col = tk.Label(self.Data_Cleaning, text="Insert Column Range for Objectives (Y)").grid()
-        self.dc_dep_col = tk.Entry(self.Data_Cleaning, textvariable=self.dc_dep_range_col).grid()
+        self.dc_obj_range_col = tk.StringVar()
+        self.dc_instr_obj_col = tk.Label(self.Data_Cleaning, text="Insert Column Range for Objectives (Y)").grid()
+        self.dc_obj_col = tk.Entry(self.Data_Cleaning, textvariable=self.dc_obj_range_col).grid()
 
-        self.dc_instr_dep_row = tk.Label(self.Data_Cleaning, text="Insert Row Range for Objectives (Y)").grid()
-        self.dc_dep_row = tk.Entry(self.Data_Cleaning, textvariable=self.dc_range_row).grid()
+        self.dc_instr_obj_row = tk.Label(self.Data_Cleaning, text="Insert Row Range for Objectives (Y)").grid()
+        self.dc_obj_row = tk.Entry(self.Data_Cleaning, textvariable=self.dc_range_row).grid()
 
         self.cleaned_display = tk.Label(self.Data_Cleaning, text="")
         self.dc_parameters_button = tk.Button(self.Data_Cleaning, text="Save Ranges", command=self.save_dc_param).grid()
         self.original_data_label = tk.Label(self.Data_Cleaning, text="Original Data").grid()
 
         self.cleaned_label = tk.Label(self.Data_Cleaning, text="Cleaned Data")
-        self.len_ind = 0
-        self.len_dep = 0
+        self.len_var = 0
+        self.len_obj = 0
 
         self.use_clean_data = tk.Button(self.Data_Cleaning, text="Use Cleaned Data", command=self.begin_setup)
 
@@ -141,13 +141,15 @@ class LaneFireGUI:
         self.setup_bofire_canvas = tk.Canvas(self.root)
         self.setup_bofire_label = tk.Label(self.setup_bofire_canvas, text="BOFIRE Settings").grid(row=0)
 
-        self.data_description = "Number of Independent Variables: {0} \n Number of Dependent Variables: {1}".format(
-            self.len_ind, self.len_dep-self.len_ind)
+        self.data_description = "Number of Variables: {0} \n Number of Objectives: {1}".format(
+            self.len_var, self.len_obj-self.len_obj)
         self.setbo_description = tk.Label(self.setup_bofire_canvas, text=self.data_description)
+
 
         self.set_var_iter = 0
         self.weight_holder = []
         self.bound_holder = []
+        self.obj_type = []
         self.weights_label = tk.Label(self.setup_bofire_canvas, text="Enter Weights").grid(row=3)
         self.weight_var = tk.StringVar(value="0")
         self.weights_var_entry = tk.Entry(self.setup_bofire_canvas, textvariable=self.weight_var).grid(row=4)
@@ -258,9 +260,9 @@ class LaneFireGUI:
         """
         Saves the parameters set in the Data Cleaning Window for use of Data!
 
-        self.dc_ind_range_col
+        self.dc_var_range_col
         self.dc_range_row
-        self.dc_dep_range_col
+        self.dc_obj_range_col
 
         the parameters here have to be very specific;
 
@@ -280,15 +282,15 @@ class LaneFireGUI:
         eg. (7,8)(9:21)
         """
         dc_param = dict()
-        dc_param.update({"dc_ind_range_col": self.dc_ind_range_col.get()})
+        dc_param.update({"dc_var_range_col": self.dc_var_range_col.get()})
         dc_param.update({"dc_range_row": self.dc_range_row.get()})
-        dc_param.update({"dc_dep_range_col": self.dc_dep_range_col.get()})
+        dc_param.update({"dc_obj_range_col": self.dc_obj_range_col.get()})
         self.cleaned_input_data = self.clean_data(dc_param)
         self.cleaned_label.grid()
         self.cleaned_display = tk.Label(self.Data_Cleaning, text=str(self.cleaned_input_data), relief=GROOVE).grid()
         self.use_clean_data.grid()
-        self.data_description = "Number of Independent Variables: {0} \n Number of Dependent Variables: {1}".format(
-            self.len_ind, self.len_dep-self.len_ind)
+        self.data_description = "Number of Variables: {0} \n Number of Objectives: {1}".format(
+            self.len_var, self.len_obj-self.len_var)
         print(self.data_description)
 
     def clean_data(self, dc_input_param):
@@ -316,9 +318,9 @@ class LaneFireGUI:
             # Filter out empty strings and return the result
             return [match[0] if match[0] else match[1] for match in matches]
 
-        dep_col_input = parse_param(dc_input_param.get("dc_dep_range_col"))
+        obj_col_input = parse_param(dc_input_param.get("dc_obj_range_col"))
         row_input = parse_param(dc_input_param.get("dc_range_row"))
-        indep_col_input_input = parse_param(dc_input_param.get("dc_ind_range_col"))
+        var_col_input_input = parse_param(dc_input_param.get("dc_var_range_col"))
 
         """
         Below is the most disgusting use of pandas slicing every seen, I apologize to anyone who views this. 
@@ -340,45 +342,45 @@ class LaneFireGUI:
                 row_input_hold = [int(param)]
 
         list_col_index = list()
-        for param in indep_col_input_input:
-            indep_col_input_hold = list()
+        for param in var_col_input_input:
+            var_col_input_hold = list()
             if "," in param and ":" in param:
                 print("ERROR MSG: Mixed Use of Parameter Ranges")
             elif ":" in param:
-                indep_col_begin, indep_col_end = param.split(":")
-                for i in range(int(indep_col_begin), int(indep_col_end)):
-                    indep_col_input_hold.append(i)
+                var_col_begin, var_col_end = param.split(":")
+                for i in range(int(var_col_begin), int(var_col_end)):
+                    var_col_input_hold.append(i)
             elif "," in param:
-                indep_col_input_hold = param.split(",")
-                indep_col_input_hold = [int(x) for x in indep_col_input_hold]
+                var_col_input_hold = param.split(",")
+                var_col_input_hold = [int(x) for x in var_col_input_hold]
             else:
-                indep_col_input_hold = [int(param)]
+                var_col_input_hold = [int(param)]
             for rows in row_input_hold:
-                for col in indep_col_input_hold:
+                for col in var_col_input_hold:
                     cleaned_df.at[rows, col] = self.new_data_df.iloc[rows, col]
-            for col in indep_col_input_hold:
+            for col in var_col_input_hold:
                 list_col_index.append(col)
-            self.len_ind = len(list_col_index)
+            self.len_var = len(list_col_index)
 
-        for param in dep_col_input:
-            dep_col_input_hold = list()
+        for param in obj_col_input:
+            obj_col_input_hold = list()
             if "," in param and ":" in param:
                 print("ERROR MSG: Mixed Use of Parameter Ranges")
             elif ":" in param:
-                dep_col_begin, dep_col_end = param.split(":")
-                for i in range(int(dep_col_begin), int(dep_col_end)):
-                    dep_col_input_hold.append(i)
+                obj_col_begin, obj_col_end = param.split(":")
+                for i in range(int(obj_col_begin), int(obj_col_end)):
+                    obj_col_input_hold.append(i)
             elif "," in param:
-                dep_col_input_hold = (param.split(","))
-                dep_col_input_hold = [int(x) for x in dep_col_input_hold]
+                obj_col_input_hold = (param.split(","))
+                obj_col_input_hold = [int(x) for x in obj_col_input_hold]
             else:
-                dep_col_input_hold = [int(param)]
+                obj_col_input_hold = [int(param)]
             for rows in row_input_hold:
-                for col in dep_col_input_hold:
+                for col in obj_col_input_hold:
                     cleaned_df.at[rows, col] = self.new_data_df.iloc[rows, col]
-            for col in dep_col_input_hold:
+            for col in obj_col_input_hold:
                 list_col_index.append(col)
-        self.len_dep = len(list_col_index)
+        self.len_obj = len(list_col_index)
         col_iter = 0
         for col_index in list_col_index:
             cleaned_df.rename({cleaned_df.columns[col_iter]: self.new_data_df.columns[col_index]},
@@ -435,14 +437,14 @@ class LaneFireGUI:
         self.verify_bofire.grid_forget()
         self.ask_bofire_screen.grid()
         new_param = LaneFire.LaneFireParam(
-            ind_names=self.cleaned_input_data.columns[0:self.len_ind],
-            dep_names=self.cleaned_input_data.columns[self.len_ind:self.len_dep],
-            ind_bound_tuples=self.bound_holder[0:self.len_ind],
-            dep_bound_tuples=self.bound_holder[self.len_ind:self.len_dep],
-            list_ind_weights=self.weight_holder[0:self.len_ind],
-            list_dep_weights=self.weight_holder[self.len_ind:self.len_dep],
+            var_names=self.cleaned_input_data.columns[0:self.len_var],
+            obj_names=self.cleaned_input_data.columns[self.len_var:self.len_obj],
+            var_bound_tuples=self.bound_holder[0:self.len_var],
+            obj_bound_tuples=self.bound_holder[self.len_var:self.len_obj],
+            list_var_weights=self.weight_holder[0:self.len_var],
+            list_obj_weights=self.weight_holder[self.len_var:self.len_obj],
             list_opt_types=[])
-        print(new_param.list_dep_weights)
+        print(new_param.list_obj_weights)
         self.new_domain = LaneFire.bofire_setup_pipe(new_param)
 
     def run_new_bofire(self):
@@ -457,8 +459,8 @@ class LaneFireGUI:
         self.current_experiment.y_sample_space = None
         self.current_experiment.original_provided_exp = self.cleaned_input_data
         self.current_experiment.list_predictions.append(self.candidates)
-        self.current_experiment.independent_var_n = self.len_ind
-        self.current_experiment.dependent_var_n = self.len_dep - self.len_ind
+        self.current_experiment.var_n = self.len_var
+        self.current_experiment.obj_n = self.len_obj - self.len_var
         self.current_experiment.domain = self.new_domain
         self.save_exp_new.grid()
         # self.plot_new.grid()
