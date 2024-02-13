@@ -42,6 +42,8 @@ class Experiment:
 
         self.exp_info = {"Name": None,
                          "Data Points Originally Provided": None, "Number of Additional Samples Added": None}
+        self.independent_var_n = None
+        self.dependent_var_n = None
 
     def print_info(self):
         """
@@ -156,7 +158,18 @@ def print_wo(combined_predictions):
     plt.show()
 
 
-def bofire_setup_pipe():
+class LaneFireParam:
+    def __init__(self, ind_names, dep_names, ind_bound_tuples, dep_bound_tuples, list_ind_weights, list_dep_weights,
+                 list_opt_types):
+        self.ind_n = ind_names
+        self.dep_n = dep_names
+        self.dep_bound_tuples = dep_bound_tuples
+        self.ind_bound_tuples = ind_bound_tuples
+        self.list_ind_weights = list_ind_weights
+        self.list_dep_weights = list_dep_weights
+        self.list_opt_types = list_opt_types
+
+def bofire_setup_pipe(LaneFireParam):
     """
     A function contained code based in and modified from the BoFire Repo. This preps any use of the bofire package and
     use of ask or tell functions.
@@ -164,65 +177,81 @@ def bofire_setup_pipe():
     Needs to be expanded to be modified easily.
     :return:
     """
-    from bofire.data_models.features.api import ContinuousInput, DiscreteInput, CategoricalInput, \
-        CategoricalDescriptorInput
-    from bofire.data_models.features.api import ContinuousOutput
-    from bofire.data_models.objectives.api import MaximizeObjective, MinimizeObjective
-    from bofire.data_models.domain.api import Inputs, Outputs
-    from bofire.data_models.constraints.api import LinearEqualityConstraint, LinearInequalityConstraint
-    from bofire.data_models.domain.api import Constraints
-    from bofire.data_models.domain.api import Domain
 
-    # scRNA Test
-    x1 = ContinuousInput(key="x1", bounds=(0, 1))  # toy in
-    # labels = ['Relu sine', 'Shifted sine', 'Sine', 'Noise', 'Linear']
-    # 'Relu sine'
+    """
+    This is also a butchered setup, there is definitely a better way to implement this. 
+    """
+
+    x1 = ContinuousInput(key=LaneFireParam.ind_n[0], bounds=LaneFireParam.ind_bound_tuples[0])
+    input_features = Inputs(features=[x1])
+
+    if len(LaneFireParam.ind_bound_tuples) >= 2:
+        x2 = ContinuousInput(key=LaneFireParam.ind_n[1], bounds=LaneFireParam.ind_bound_tuples[1])
+    if len(LaneFireParam.ind_bound_tuples) >= 3:
+        x3 = ContinuousInput(key=LaneFireParam.ind_n[2], bounds=LaneFireParam.ind_bound_tuples[2])
+        input_features = Inputs(features=[x1, x2, x3])
+    if len(LaneFireParam.ind_bound_tuples) >= 4:
+        x4 = ContinuousInput(key=LaneFireParam.ind_n[3], bounds=LaneFireParam.ind_bound_tuples[3])
+        input_features = Inputs(features=[x1, x2, x3, x4])
+    if len(LaneFireParam.ind_bound_tuples) >= 5:
+        x5 = ContinuousInput(key=LaneFireParam.ind_n[4], bounds=LaneFireParam.ind_bound_tuples[4])
+        input_features = Inputs(features=[x1, x2, x3, x4,x5])
+    if len(LaneFireParam.ind_bound_tuples) >= 6:
+        print("TOO MANY INDEPENDENT VARIABLES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
+
+
+    """
+    No further variables are included as I don't think there is a situation that needs this much
+    """
 
     objective1 = MaximizeObjective(
-        w=1.0,
-        bounds=[-2, 2],
-    )
+        w=LaneFireParam.list_dep_weights[0],
+        bounds=LaneFireParam.dep_bound_tuples[0])
+    y1 = ContinuousOutput(key=LaneFireParam.dep_n[0], objective=objective1)
 
-    y1 = ContinuousOutput(key="y1", objective=objective1)
+    output_features = Outputs(features=[y1])
 
-    # 'Shifted sine'
+    if len(LaneFireParam.dep_n) >= 2:
+        objective2 = MaximizeObjective(
+            w=LaneFireParam.list_dep_weights[1],
+            bounds=LaneFireParam.dep_bound_tuples[1])
+        y2 = ContinuousOutput(key=LaneFireParam.dep_n[1], objective=objective2)
 
-    objective2 = MaximizeObjective(
-        w=1.0,
-        bounds=[-2, 2],
-    )
+        output_features = Outputs(features=[y1, y2])
+    if len(LaneFireParam.dep_n) >= 3:
+        objective3 = MaximizeObjective(
+            w=LaneFireParam.list_dep_weights[2],
+            bounds=LaneFireParam.dep_bound_tuples[2])
+        y3 = ContinuousOutput(key=LaneFireParam.dep_n[2], objective=objective3)
 
-    y2 = ContinuousOutput(key="y2", objective=objective2)
+        output_features = Outputs(features=[y1, y2, y3])
+    if len(LaneFireParam.dep_n) >= 4:
+        objective4 = MaximizeObjective(
+            w=LaneFireParam.list_dep_weights[3],
+            bounds=LaneFireParam.dep_bound_tuples[3])
+        y4 = ContinuousOutput(key=LaneFireParam.dep_n[3], objective=objective4)
 
-    'Sine'
-    objective3 = MaximizeObjective(
-        w=1.0,
-        bounds=[-2, 2],
-    )
-    y3 = ContinuousOutput(key="y3", objective=objective3)
+        output_features = Outputs(features=[y1, y2, y3, y4])
+    if len(LaneFireParam.dep_n) >= 5:
+        objective5 = MaximizeObjective(
+            w=LaneFireParam.list_dep_weights[4],
+            bounds=LaneFireParam.dep_bound_tuples[4])
+        y5 = ContinuousOutput(key=LaneFireParam.dep_n[4], objective=objective5)
 
-    'Noise'
-    objective4 = MaximizeObjective(
-        w=1.0,
-        bounds=[-5, 2],
-    )
-    y4 = ContinuousOutput(key="y4", objective=objective4)
+        output_features = Outputs(features=[y1, y2, y3, y4, y5])
 
-    # 'Linear'
-    objective5 = MaximizeObjective(
-        w=1.0,
-        bounds=[-1, 3],
-    )
-    y5 = ContinuousOutput(key="y5", objective=objective5)
-
-    input_features = Inputs(features=[x1])
-    output_features = Outputs(features=[y1, y2, y3, y4, y5])
+    if len(LaneFireParam.dep_n) >= 6:
+        print("TOO MANY OBJECTIVES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
+    """
+       No further objectives are included as I don't think there is a situation that needs this much
+    """
 
     # A mixture: x1 + x2 + x3 = 1
     # constr1 = LinearEqualityConstraint(features=["x1", "x2", "x3"], coefficients=[1,1,1], rhs=1)
 
     # x1 + 2 * x3 < 0.8
     # constr2 = LinearInequalityConstraint(features=["x1", "x3"], coefficients=[1, 2], rhs=0.8)
+
     constraints = []
     domain = Domain(inputs=input_features, outputs=output_features, constraints=constraints)
 
@@ -235,3 +264,4 @@ def bofire_ask_update(domain, original_exp, ask_n):
     strategy_data_model.tell(experiments=original_exp)
     informed_candidates = strategy_data_model.ask(ask_n)
     return informed_candidates
+
