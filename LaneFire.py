@@ -44,6 +44,7 @@ class Experiment:
                          "Data Points Originally Provided": None, "Number of Additional Samples Added": None}
         self.independent_var_n = None
         self.dependent_var_n = None
+        self.domain = None
 
     def print_info(self):
         """
@@ -54,48 +55,40 @@ class Experiment:
 
 
 def plot_clean(provided_exp, informed_candidates):
-    """
-    This function plots the cleaned data with proposed experimental data including a SD bar around each.
-
-    It currently is programmed for 1 independent variable and 5 dependent variables. I will work on updating this.
-
-    :param provided_exp: previously provided experimental data to BoFire
-    :param informed_candidates: predicted experimental data by BoFire
-    """
-    provided_simulations = provided_exp
-
-    zero_sd = []
-    for zero in range(len(provided_simulations.index)):
-        zero_sd.append(0)
-
-    predictions = informed_candidates
-    renamed_informed = predictions.rename(columns={"y1_pred": "y1", "y2_pred": "y2", "y3_pred": "y3", "y4_pred": "y4",
-                                                   "y5_pred": "y5", "y6_pred": "y6"})
-    combined_predictions = pd.concat([provided_simulations, renamed_informed], ignore_index=True)
-
-    f, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, sharex=True, clear=True, sharey=True)
-
-    f.set_figheight(5)
-    f.set_figwidth(15)
-
-    ax1.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y1'],
-                 combined_predictions.loc[:, 'y1_sd'], linestyle='None', marker='^')
-    ax1.set_xlim([0, 1])
-    ax2.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y2'],
-                 combined_predictions.loc[:, 'y3_sd'], linestyle='None', marker='^')
-    ax2.set_xlim([0, 1])
-    ax3.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y3'],
-                 combined_predictions.loc[:, 'y3_sd'], linestyle='None', marker='^')
-    ax3.set_xlim([0, 1])
-    ax4.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y4'],
-                 combined_predictions.loc[:, 'y4_sd'], linestyle='None', marker='^')
-    ax4.set_xlim([0, 1])
-    ax5.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y5'],
-                 combined_predictions.loc[:, 'y5_sd'], linestyle='None', marker='^')
-    ax5.set_xlim([0, 1])
-
-    plt.xlabel("x")
-    plt.show()
+    pass
+    # """
+    # This function plots the cleaned data with proposed experimental data including a SD bar around each.
+    #
+    # It currently is programmed for 1 independent variable and 5 dependent variables. I will work on updating this.
+    #
+    # :param provided_exp: previously provided experimental data to BoFire
+    # :param informed_candidates: predicted experimental data by BoFire
+    # """
+    # combined_predictions = pd.concat([provided_exp, informed_candidates], ignore_index=True)
+    #
+    # f, (ax1, ax2, ax3, ax4, ax5) = plt.subplots(1, 5, sharex=True, clear=True, sharey=True)
+    #
+    # f.set_figheight(5)
+    # f.set_figwidth(15)
+    #
+    # ax1.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y1'],
+    #              combined_predictions.loc[:, 'y1_sd'], linestyle='None', marker='^')
+    # ax1.set_xlim([0, 1])
+    # ax2.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y2'],
+    #              combined_predictions.loc[:, 'y3_sd'], linestyle='None', marker='^')
+    # ax2.set_xlim([0, 1])
+    # ax3.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y3'],
+    #              combined_predictions.loc[:, 'y3_sd'], linestyle='None', marker='^')
+    # ax3.set_xlim([0, 1])
+    # ax4.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y4'],
+    #              combined_predictions.loc[:, 'y4_sd'], linestyle='None', marker='^')
+    # ax4.set_xlim([0, 1])
+    # ax5.errorbar(combined_predictions.loc[:, "x1"], combined_predictions.loc[:, 'y5'],
+    #              combined_predictions.loc[:, 'y5_sd'], linestyle='None', marker='^')
+    # ax5.set_xlim([0, 1])
+    #
+    # plt.xlabel("x")
+    # plt.show()
 
 
 def rename_info(informed_candidates):

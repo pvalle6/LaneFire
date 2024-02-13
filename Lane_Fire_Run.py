@@ -76,9 +76,9 @@ class LaneFireGUI:
         self.evaluate_exp = tk.Canvas(self.root)
         self.loaded_exp = tk.Label(self.evaluate_exp, text="Experiment Loaded!").grid()
 
-        self.plot_exp = tk.Button(self.evaluate_exp, text="Plot Experiments", command=self.plot_exp)
-        self.plot_exp.grid()
-        self.ask_exp = tk.Button(self.evaluate_exp, text="Ask Experiment", command=self.ask_exp)
+        self.plot_d_button = tk.Button(self.evaluate_exp, text="Plot Data", command=self.plot_data)
+        self.plot_d_button.grid()
+        self.ask_exp = tk.Button(self.evaluate_exp, text="Ask Experiment", command=self.run_old_bofire)
         self.ask_exp.grid()
         self.save_exp = tk.Button(self.evaluate_exp, text="Save Experiment to PKL", command=self.save_pickle)
         self.save_exp.grid()
@@ -135,7 +135,7 @@ class LaneFireGUI:
         self.use_clean_data = tk.Button(self.Data_Cleaning, text="Use Cleaned Data", command=self.begin_setup)
 
         """
-        Set BOFIRE settings 
+        Set BOFIRE Parameters 
         """
 
         self.setup_bofire_canvas = tk.Canvas(self.root)
@@ -143,7 +143,7 @@ class LaneFireGUI:
 
         self.data_description = "Number of Independent Variables: {0} \n Number of Dependent Variables: {1}".format(
             self.len_ind, self.len_dep-self.len_ind)
-        self.setbo_description = tk.Label(self.setup_bofire_canvas, textvariable=self.data_description)
+        self.setbo_description = tk.Label(self.setup_bofire_canvas, text=self.data_description)
 
         self.set_var_iter = 0
         self.weight_holder = []
@@ -172,28 +172,32 @@ class LaneFireGUI:
         self.verify_header = tk.Label(self.verify_bofire, text="Verify the Following Settings for BoFire").grid()
         self.verify_table = str()
         self.verify_description = tk.Label(self.verify_bofire, text = self.verify_table)
-        self.setup_bofire_domain_button = tk.Button(self.verify_bofire, text="Set Up Bofire Strategy", command=self.gen_domain).grid()
+        self.setup_bofire_domain_button = tk.Button(self.verify_bofire, text="Set Up Bofire Strategy",
+                                                    command=self.gen_domain).grid()
 
         """
-        Run Bofire Screen
+        Ask Bofire Screen
         """
-        self.run_bofire_screen = tk.Canvas(self.root)
-        self.run_bf_scr_label = tk.Label(self.run_bofire_screen, text="Bofire Run Screen").grid()
+        self.ask_bofire_screen = tk.Canvas(self.root)
+        self.run_bf_scr_label = tk.Label(self.ask_bofire_screen, text="Bofire Run Screen").grid()
 
-        self.run_bf_scr_asks = tk.Label(self.run_bofire_screen,
-                                        text="How Many Asks? (More than 1 Will Result in Very High Computational Demand").grid()
-        self.asks_wheel = tk.Spinbox(self.run_bofire_screen, from_=1, to=5)
+        self.run_bf_scr_asks = tk.Label(self.ask_bofire_screen,
+                                        text="How Many Asks? " +
+                                             "(More than 1 Will Result in Very High Computational Demand").grid()
+        self.asks_wheel = tk.Spinbox(self.ask_bofire_screen, from_=1, to=5)
         self.asks_wheel.grid()
-        self.run_bf_button = tk.Button(self.run_bofire_screen, text="Ask Bofire for next experiment", command=self.run_bofire).grid()
+        self.run_bf_button = tk.Button(self.ask_bofire_screen,
+                                       text="Ask Bofire for next experiment", command=self.run_new_bofire).grid()
 
         """
         Running Bofire Screen
         """
         self.bofire_ask_scr = tk.Canvas(self.root)
-        self.bf_ask_header = tk.Label(self.bofire_ask_scr, text = "Bofire Results").grid()
-        self.bf_ask_header_two =tk.Label(self.bofire_ask_scr, text = "Informed Candidates").grid()
-        self.bf_ask_results =tk.Label(self.bofire_ask_scr)
+        self.bf_ask_header = tk.Label(self.bofire_ask_scr, text="Bofire Results").grid()
+        self.bf_ask_header_two = tk.Label(self.bofire_ask_scr, text="Informed Candidates").grid()
+        self.bf_ask_results = tk.Label(self.bofire_ask_scr)
         self.save_exp_new = tk.Button(self.bofire_ask_scr, text="Save Experiment to PKL", command=self.save_pickle)
+        # self.plot_new = tk.Button(self.bofire_ask_scr, text="Plot Experiment Suggestion", command=self.plot_with)
 
     def start_question_de(self):
         self.splash.grid_forget()
@@ -420,8 +424,8 @@ class LaneFireGUI:
     def verification_gen(self):
         self.verify_table = "EXP/OBJ | WEIGHT | BOUND \n"
         for index, header in enumerate(self.cleaned_input_data.columns):
-            self.verify_table = self.verify_table + str(header) + ":" + str(self.weight_holder[index]) + ":" + str(self.bound_holder[index]) + "\n"
-
+            self.verify_table = (self.verify_table + str(header) + ":" +
+                                 str(self.weight_holder[index]) + ":" + str(self.bound_holder[index]) + "\n")
 
     def gen_domain(self):
         """
@@ -429,7 +433,7 @@ class LaneFireGUI:
         :return:
         """
         self.verify_bofire.grid_forget()
-        self.run_bofire_screen.grid()
+        self.ask_bofire_screen.grid()
         new_param = LaneFire.LaneFireParam(
             ind_names=self.cleaned_input_data.columns[0:self.len_ind],
             dep_names=self.cleaned_input_data.columns[self.len_ind:self.len_dep],
@@ -438,41 +442,48 @@ class LaneFireGUI:
             list_ind_weights=self.weight_holder[0:self.len_ind],
             list_dep_weights=self.weight_holder[self.len_ind:self.len_dep],
             list_opt_types=[])
-        print(self.len_ind)
-        print(self.len_dep)
-        print(self.len_dep-self.len_ind)
-        print(self.weight_holder[self.len_ind+1:self.len_dep+1])
-        print(self.weight_holder)
         print(new_param.list_dep_weights)
         self.new_domain = LaneFire.bofire_setup_pipe(new_param)
 
-    def run_bofire(self):
-        self.run_bofire_screen.grid_forget()
+    def run_new_bofire(self):
+        self.ask_bofire_screen.grid_forget()
         self.bofire_ask_scr.grid()
-        self.candidates = LaneFire.bofire_ask_update(self.new_domain, self.cleaned_input_data, int(self.asks_wheel.get()))
+        self.candidates = LaneFire.bofire_ask_update(self.new_domain, self.cleaned_input_data,
+                                                     int(self.asks_wheel.get()))
         self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates).grid()
 
         self.current_experiment = LaneFire.Experiment()
         self.current_experiment.x_sample_space = None
         self.current_experiment.y_sample_space = None
-        self.current_experiment.original_provided_exp=self.cleaned_input_data
+        self.current_experiment.original_provided_exp = self.cleaned_input_data
         self.current_experiment.list_predictions.append(self.candidates)
         self.current_experiment.independent_var_n = self.len_ind
         self.current_experiment.dependent_var_n = self.len_dep - self.len_ind
+        self.current_experiment.domain = self.new_domain
         self.save_exp_new.grid()
+        # self.plot_new.grid()
 
+    def run_old_bofire(self):
+        self.bofire_ask_scr.grid()
+        self.candidates = LaneFire.bofire_ask_update(self.current_experiment.domain,
+                                                     self.current_experiment.original_provided_exp,
+                                                     int(self.asks_wheel.get()))
+        self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates).grid()
+        self.current_experiment.list_predictions.append(self.candidates)
+        self.save_exp_new.grid()
+        # self.plot_new.grid()
 
     def find_pickle(self):
         """
         Find a pickle file for a previous experiment run and loads it.
         :return:
         """
-        self.loaded_pkl_exp = fd.askopenfilename()
+        loaded_pkl_exp = fd.askopenfilename()
 
-        if self.loaded_pkl_exp != "":
+        if loaded_pkl_exp != "":
             self.load_exp.grid_forget()
 
-            with open(self.loaded_pkl_exp, "rb") as handle:
+            with open(loaded_pkl_exp, "rb") as handle:
                 self.current_experiment = pkl.load(handle, encoding='UTF-8')
 
             self.experiment_history = tk.Label(self.evaluate_exp,
@@ -487,12 +498,12 @@ class LaneFireGUI:
         Saves an experiment run to be used later
         :return:
         """
-        sfile = fd.asksaveasfile()
+        sfile = fd.asksaveasfilename()
 
-        with open(bytes(str(sfile)).decode("unicode-escape"), "wb") as handle:
-            pkl.dump(self.current_experiment, handle, encoding='UTF-8')
+        with open(sfile, "wb") as handle:
+            pkl.dump(self.current_experiment, handle)
 
-    def plot_exp(self):
+    def plot_data(self):
         """
         Plots an experiment run
 
@@ -501,16 +512,12 @@ class LaneFireGUI:
         """
         LaneFire.print_wo(self.current_experiment.original_provided_exp)
 
-    def ask_exp(self):
-        """
-        Runs BoFire on a loaded experiment run
-
-        NOT USE ABLE
-        :return:
-        """
-        # domain = LaneFire.bofire_setup_pipe()
-        # LaneFire.bofire_ask_update(domain, self.current_experiment.original_provided_exp, 1)
-        pass
+    # def plot_with(self):
+    #     """
+    #     Plots an experiment with deviations along side provided data
+    #     :return:
+    #     """
+    #     LaneFire.plot_clean(self.current_experiment.original_provided_exp, self.current_experiment.list_predictions[0])
 
     def run(self):
         self.root.mainloop()
