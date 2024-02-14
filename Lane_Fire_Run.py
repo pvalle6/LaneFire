@@ -151,9 +151,10 @@ class LaneFireGUI:
         self.bound_holder = []
         self.obj_type = []
         self.target_list = []
+
         self.type_var = tk.IntVar()
-        self.type_rb1 = tk.Radiobutton(self.setup_bofire_canvas, text="Maximize", variable=self.type_var, value = 1)
-        self.type_rb2 = tk.Radiobutton(self.setup_bofire_canvas, text="Minimize", variable=self.type_var, value = 2)
+        self.type_rb1 = tk.Radiobutton(self.setup_bofire_canvas, text="Maximize", variable=self.type_var, value=1)
+        self.type_rb2 = tk.Radiobutton(self.setup_bofire_canvas, text="Minimize", variable=self.type_var, value=2)
         self.type_rb3 = tk.Radiobutton(self.setup_bofire_canvas, text="Target", variable=self.type_var, value=3)
         self.target_var = tk.StringVar()
         self.target_label = tk.Label(self.setup_bofire_canvas, text = "Obj Target")
@@ -182,7 +183,7 @@ class LaneFireGUI:
         self.verify_bofire = tk.Canvas(self.root)
         self.verify_header = tk.Label(self.verify_bofire, text="Verify the Following Settings for BoFire").grid()
         self.verify_table = str()
-        self.verify_description = tk.Label(self.verify_bofire, text = self.verify_table)
+        self.verify_description = tk.Label(self.verify_bofire, text=self.verify_table)
         self.setup_bofire_domain_button = tk.Button(self.verify_bofire, text="Set Up Bofire Strategy",
                                                     command=self.gen_domain).grid()
 
@@ -405,9 +406,16 @@ class LaneFireGUI:
         self.bound_holder.append((float(self.low_bounds_var.get()), float(self.up_bounds_var.get())))
         self.set_var_iter = self.set_var_iter + 1
 
+        """
+        This needs to be refactored into appending an Experiment instance rather than a global variable
+        """
+
         if self.set_var_iter > self.len_var:
             self.obj_type.append(int(self.type_var.get()))
-            self.target_list.append(float(self.target_var.get()))
+            if int(self.type_var.get()) == 3:
+                self.target_list.append(float(self.target_var.get()))
+            else:
+                self.target_list.append(None)
         if self.set_var_iter >= self.len_var:
             self.type_rb1.grid(row=9)
             self.type_rb2.grid(row=10)
@@ -455,8 +463,13 @@ class LaneFireGUI:
 
     def gen_domain(self):
         """
-        Generates a domain for the strategy used in Bofire
+        Generates a domain for the strategy used in Bofire.
+
         :return:
+        """
+
+        """
+        This needs to be implemented before and its properties need to be created along with the experiment.
         """
         self.verify_bofire.grid_forget()
         self.ask_bofire_screen.grid()
@@ -467,7 +480,9 @@ class LaneFireGUI:
             obj_bound_tuples=self.bound_holder[self.len_var:self.len_obj],
             list_var_weights=self.weight_holder[0:self.len_var],
             list_obj_weights=self.weight_holder[self.len_var:self.len_obj],
-            list_opt_types=[])
+            list_opt_types=self.obj_type,
+            obj_targets=self.target_list
+        )
         print(new_param.list_obj_weights)
         self.new_domain = LaneFire.bofire_setup_pipe(new_param)
 
@@ -479,8 +494,6 @@ class LaneFireGUI:
         self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates).grid()
 
         self.current_experiment = LaneFire.Experiment()
-        self.current_experiment.x_sample_space = None
-        self.current_experiment.y_sample_space = None
         self.current_experiment.original_provided_exp = self.cleaned_input_data
         self.current_experiment.list_predictions.append(self.candidates)
         self.current_experiment.var_n = self.len_var
@@ -543,7 +556,8 @@ class LaneFireGUI:
     #     Plots an experiment with deviations along side provided data
     #     :return:
     #     """
-    #     LaneFire.plot_clean(self.current_experiment.original_provided_exp, self.current_experiment.list_predictions[0])
+    #     LaneFire.plot_clean(self.current_experiment.original_provided_exp,
+    #     self.current_experiment.list_predictions[0])
 
     def run(self):
         self.root.mainloop()

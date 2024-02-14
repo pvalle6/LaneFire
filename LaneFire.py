@@ -15,7 +15,7 @@ import pickle as pkl
 from bofire.data_models.strategies.api import MoboStrategy as DataModel
 from bofire.data_models.features.api import ContinuousInput, DiscreteInput, CategoricalInput, CategoricalDescriptorInput
 from bofire.data_models.features.api import ContinuousOutput
-from bofire.data_models.objectives.api import MaximizeObjective, MinimizeObjective, TargetObjective
+from bofire.data_models.objectives.api import MaximizeObjective, MinimizeObjective, TargetObjective, CloseToTargetObjective
 from bofire.data_models.domain.api import Inputs, Outputs
 from bofire.data_models.constraints.api import LinearEqualityConstraint, LinearInequalityConstraint
 from bofire.data_models.domain.api import Constraints
@@ -154,8 +154,8 @@ def print_wo(combined_predictions):
 class LaneFireParam:
     def __init__(self, var_names, obj_names, var_bound_tuples, obj_bound_tuples, list_var_weights, list_obj_weights,
                  list_opt_types, obj_targets):
-        self.var_n = var_names
-        self.obj_n = obj_names
+        self.var_names = var_names
+        self.obj_names = obj_names
         self.obj_bound_tuples = obj_bound_tuples
         self.var_bound_tuples = var_bound_tuples
         self.list_var_weights = list_var_weights
@@ -177,19 +177,19 @@ def bofire_setup_pipe(LaneFireParam):
     This is also a butchered setup, there is definitely a better way to implement this. 
     """
 
-    x1 = ContinuousInput(key=LaneFireParam.var_n[0], bounds=LaneFireParam.var_bound_tuples[0])
+    x1 = ContinuousInput(key=LaneFireParam.var_names[0], bounds=LaneFireParam.var_bound_tuples[0])
     input_features = Inputs(features=[x1])
 
     if len(LaneFireParam.var_bound_tuples) >= 2:
-        x2 = ContinuousInput(key=LaneFireParam.var_n[1], bounds=LaneFireParam.var_bound_tuples[1])
+        x2 = ContinuousInput(key=LaneFireParam.var_names[1], bounds=LaneFireParam.var_bound_tuples[1])
     if len(LaneFireParam.var_bound_tuples) >= 3:
-        x3 = ContinuousInput(key=LaneFireParam.var_n[2], bounds=LaneFireParam.var_bound_tuples[2])
+        x3 = ContinuousInput(key=LaneFireParam.var_names[2], bounds=LaneFireParam.var_bound_tuples[2])
         input_features = Inputs(features=[x1, x2, x3])
     if len(LaneFireParam.var_bound_tuples) >= 4:
-        x4 = ContinuousInput(key=LaneFireParam.var_n[3], bounds=LaneFireParam.var_bound_tuples[3])
+        x4 = ContinuousInput(key=LaneFireParam.var_names[3], bounds=LaneFireParam.var_bound_tuples[3])
         input_features = Inputs(features=[x1, x2, x3, x4])
     if len(LaneFireParam.var_bound_tuples) >= 5:
-        x5 = ContinuousInput(key=LaneFireParam.var_n[4], bounds=LaneFireParam.var_bound_tuples[4])
+        x5 = ContinuousInput(key=LaneFireParam.var_names[4], bounds=LaneFireParam.var_bound_tuples[4])
         input_features = Inputs(features=[x1, x2, x3, x4, x5])
     if len(LaneFireParam.var_bound_tuples) >= 6:
         print("TOO MANY INDEPENDENT VARIABLES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
@@ -210,18 +210,18 @@ def bofire_setup_pipe(LaneFireParam):
             objective1 = MaximizeObjective(
                 w=LaneFireParam.list_obj_weights[0],
                 bounds=LaneFireParam.obj_bound_tuples[0])
-            y1 = ContinuousOutput(key=LaneFireParam.obj_n[0], objective=objective1)
+            y1 = ContinuousOutput(key=LaneFireParam.obj_names[0], objective=objective1)
         elif LaneFireParam.list_opt_types[0] == 2:
             objective1 = MinimizeObjective(
                 w=LaneFireParam.list_obj_weights[0],
                 bounds=LaneFireParam.obj_bound_tuples[0])
-            y1 = ContinuousOutput(key=LaneFireParam.obj_n[0], objective=objective1)
+            y1 = ContinuousOutput(key=LaneFireParam.obj_names[0], objective=objective1)
         elif LaneFireParam.list_opt_types[0] == 3:
-            objective1 = TargetObjective(
+            objective1 = CloseToTargetObjective(
                 w=LaneFireParam.list_obj_weights[0],
-                bounds=LaneFireParam.obj_bound_tuples[0],
-                target=LaneFireParam.obj_targets[0])
-            y1 = ContinuousOutput(key=LaneFireParam.obj_n[0], objective=objective1)
+                target_value=LaneFireParam.obj_targets[0],
+                exponent=1)
+            y1 = ContinuousOutput(key=LaneFireParam.obj_names[0], objective=objective1)
 
         output_features = Outputs(features=[y1])
 
@@ -230,18 +230,18 @@ def bofire_setup_pipe(LaneFireParam):
             objective2 = MaximizeObjective(
                 w=LaneFireParam.list_obj_weights[1],
                 bounds=LaneFireParam.obj_bound_tuples[1])
-            y2 = ContinuousOutput(key=LaneFireParam.obj_n[1], objective=objective2)
+            y2 = ContinuousOutput(key=LaneFireParam.obj_names[1], objective=objective2)
         elif LaneFireParam.list_opt_types[1] == 2:
             objective2 = MinimizeObjective(
                 w=LaneFireParam.list_obj_weights[1],
                 bounds=LaneFireParam.obj_bound_tuples[1])
-            y2 = ContinuousOutput(key=LaneFireParam.obj_n[1], objective=objective2)
+            y2 = ContinuousOutput(key=LaneFireParam.obj_names[1], objective=objective2)
         elif LaneFireParam.list_opt_types[1] == 3:
-            objective2 = TargetObjective(
+            objective2 = CloseToTargetObjective(
                 w=LaneFireParam.list_obj_weights[1],
-                bounds=LaneFireParam.obj_bound_tuples[1],
-                target=LaneFireParam.obj_targets[1])
-            y2 = ContinuousOutput(key=LaneFireParam.obj_n[1], objective=objective2)
+                target_value=LaneFireParam.obj_targets[1],
+                exponent=1)
+            y2 = ContinuousOutput(key=LaneFireParam.obj_names[1], objective=objective2)
 
         output_features = Outputs(features=[y1, y2])
     if len(LaneFireParam.obj_bound_tuples) >= 3:
@@ -249,18 +249,18 @@ def bofire_setup_pipe(LaneFireParam):
             objective3 = MaximizeObjective(
                 w=LaneFireParam.list_obj_weights[2],
                 bounds=LaneFireParam.obj_bound_tuples[2])
-            y3 = ContinuousOutput(key=LaneFireParam.obj_n[2], objective=objective3)
+            y3 = ContinuousOutput(key=LaneFireParam.obj_names[2], objective=objective3)
         elif LaneFireParam.list_opt_types[2] == 2:
             objective3 = MinimizeObjective(
                 w=LaneFireParam.list_obj_weights[2],
                 bounds=LaneFireParam.obj_bound_tuples[2])
-            y3 = ContinuousOutput(key=LaneFireParam.obj_n[2], objective=objective3)
+            y3 = ContinuousOutput(key=LaneFireParam.obj_names[2], objective=objective3)
         elif LaneFireParam.list_opt_types[0] == 3:
-            objective3 = TargetObjective(
+            objective3 = CloseToTargetObjective(
                 w=LaneFireParam.list_obj_weights[2],
-                bounds=LaneFireParam.obj_bound_tuples[2],
-                target=LaneFireParam.obj_targets[2])
-            y3 = ContinuousOutput(key=LaneFireParam.obj_n[2], objective=objective3)
+                target_value=LaneFireParam.obj_targets[2],
+                exponent=1)
+            y3 = ContinuousOutput(key=LaneFireParam.obj_names[2], objective=objective3)
 
         output_features = Outputs(features=[y1, y2, y3])
     if len(LaneFireParam.obj_bound_tuples) >= 4:
@@ -268,36 +268,36 @@ def bofire_setup_pipe(LaneFireParam):
             objective4 = MaximizeObjective(
                 w=LaneFireParam.list_obj_weights[3],
                 bounds=LaneFireParam.obj_bound_tuples[3])
-            y4 = ContinuousOutput(key=LaneFireParam.obj_n[3], objective=objective4)
+            y4 = ContinuousOutput(key=LaneFireParam.obj_names[3], objective=objective4)
         elif LaneFireParam.list_opt_types[3] == 2:
             objective4 = MinimizeObjective(
                 w=LaneFireParam.list_obj_weights[3],
                 bounds=LaneFireParam.obj_bound_tuples[3])
-            y4 = ContinuousOutput(key=LaneFireParam.obj_n[3], objective=objective4)
+            y4 = ContinuousOutput(key=LaneFireParam.obj_names[3], objective=objective4)
         elif LaneFireParam.list_opt_types[3] == 3:
-            objective4 = TargetObjective(
+            objective4 = CloseToTargetObjective(
                 w=LaneFireParam.list_obj_weights[3],
-                bounds=LaneFireParam.obj_bound_tuples[3],
-                target=LaneFireParam.obj_targets[3])
-            y4 = ContinuousOutput(key=LaneFireParam.obj_n[3], objective=objective4)
+                target_value=LaneFireParam.obj_targets[3],
+                exponent=1)
+            y4 = ContinuousOutput(key=LaneFireParam.obj_names[3], objective=objective4)
         output_features = Outputs(features=[y1, y2, y3, y4])
     if len(LaneFireParam.obj_bound_tuples) >= 5:
         if LaneFireParam.list_opt_types[4] == 1:
             objective5 = MaximizeObjective(
                 w=LaneFireParam.list_obj_weights[4],
                 bounds=LaneFireParam.obj_bound_tuples[4])
-            y5 = ContinuousOutput(key=LaneFireParam.obj_n[4], objective=objective5)
+            y5 = ContinuousOutput(key=LaneFireParam.obj_names[4], objective=objective5)
         elif LaneFireParam.list_opt_types[4] == 2:
             objective5 = MinimizeObjective(
                 w=LaneFireParam.list_obj_weights[4],
                 bounds=LaneFireParam.obj_bound_tuples[4])
-            y5 = ContinuousOutput(key=LaneFireParam.obj_n[4], objective=objective5)
+            y5 = ContinuousOutput(key=LaneFireParam.obj_names[4], objective=objective5)
         elif LaneFireParam.list_opt_types[4] == 3:
-            objective5 = TargetObjective(
+            objective5 = CloseToTargetObjective(
                 w=LaneFireParam.list_obj_weights[4],
-                bounds=LaneFireParam.obj_bound_tuples[4],
-                target=LaneFireParam.obj_targets[4])
-            y5 = ContinuousOutput(key=LaneFireParam.obj_n[4], objective=objective5)
+                target_value=LaneFireParam.obj_targets[4],
+                exponent=1)
+            y5 = ContinuousOutput(key=LaneFireParam.obj_names[4], objective=objective5)
         output_features = Outputs(features=[y1, y2, y3, y4, y5])
 
     if len(LaneFireParam.obj_bound_tuples) >= 6:
