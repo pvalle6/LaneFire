@@ -150,6 +150,15 @@ class LaneFireGUI:
         self.weight_holder = []
         self.bound_holder = []
         self.obj_type = []
+        self.target_list = []
+        self.type_var = tk.IntVar()
+        self.type_rb1 = tk.Radiobutton(self.setup_bofire_canvas, text="Maximize", variable=self.type_var, value = 1)
+        self.type_rb2 = tk.Radiobutton(self.setup_bofire_canvas, text="Minimize", variable=self.type_var, value = 2)
+        self.type_rb3 = tk.Radiobutton(self.setup_bofire_canvas, text="Target", variable=self.type_var, value=3)
+        self.target_var = tk.StringVar()
+        self.target_label = tk.Label(self.setup_bofire_canvas, text = "Obj Target")
+        self.type_target_e = tk.Entry(self.setup_bofire_canvas, textvariable=self.target_var)
+
         self.weights_label = tk.Label(self.setup_bofire_canvas, text="Enter Weights").grid(row=3)
         self.weight_var = tk.StringVar(value="0")
         self.weights_var_entry = tk.Entry(self.setup_bofire_canvas, textvariable=self.weight_var).grid(row=4)
@@ -164,7 +173,7 @@ class LaneFireGUI:
         self.low_bounds_var_entry = tk.Entry(self.setup_bofire_canvas, textvariable=self.low_bounds_var).grid(row=8)
 
         self.set_settings_button = tk.Button(self.setup_bofire_canvas, text="Set Settings", command=self.get_settings)
-        self.set_settings_button.grid(row=9)
+        self.set_settings_button.grid(row=15)
 
         """
         Canvas to Verify all Bofire Settings 
@@ -395,6 +404,21 @@ class LaneFireGUI:
         self.weight_holder.append(float(self.weight_var.get()))
         self.bound_holder.append((float(self.low_bounds_var.get()), float(self.up_bounds_var.get())))
         self.set_var_iter = self.set_var_iter + 1
+
+        if self.set_var_iter > self.len_var:
+            self.obj_type.append(int(self.type_var.get()))
+            self.target_list.append(float(self.target_var.get()))
+        if self.set_var_iter >= self.len_var:
+            self.type_rb1.grid(row=9)
+            self.type_rb2.grid(row=10)
+            self.type_rb3.grid(row=11)
+            self.target_label.grid(row=12)
+            self.type_target_e.grid(row=13)
+
+        else:
+            self.type_rb1.grid_forget()
+            self.type_rb2.grid_forget()
+            self.type_rb3.grid_forget()
 
         if self.set_var_iter < len(self.cleaned_input_data.columns):
             self.var_label.grid_forget()
