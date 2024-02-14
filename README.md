@@ -1,4 +1,4 @@
-LaneFire is an open source GUI interface for the BoFire (https://github.com/experimental-design/bofire) application. 
+LaneFire is an open source GUI for the BoFire (https://github.com/experimental-design/bofire) application. 
 
 It allows for the creation of new experimental runs as well as the loading of previous experimental runs created by LaneFire.
 
