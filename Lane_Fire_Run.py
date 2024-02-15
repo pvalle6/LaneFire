@@ -230,7 +230,7 @@ class LaneFireGUI:
         """
         self.new_exp.grid_forget()
 
-        with open(r"C:\Users\valle\PycharmProjects\LaneFire\Experiment_Data\.previous_run_path.txt", "r") as file:
+        with open(r".\Experiment_Data\.previous_run_path.txt", "r") as file:
             old_data_path = file.read()
 
         self.new_data_df = pd.read_csv(str(old_data_path))
@@ -249,11 +249,12 @@ class LaneFireGUI:
         """
         starting_data_path = fd.askopenfilename()
 
+
         if self.starting_data_path != "":
             self.new_exp.grid_forget()
             self.new_data_df = pd.read_csv(str(starting_data_path))
 
-            with open(r"C:\Users\valle\PycharmProjects\LaneFire\Experiment_Data\.previous_run_path.txt", "w") as file:
+            with open(r".\Experiment_Data\.previous_run_path.txt", "w") as file:
                 file.write(str(starting_data_path))
 
             self.Data_Cleaning.grid()
