@@ -249,7 +249,6 @@ class LaneFireGUI:
         """
         starting_data_path = fd.askopenfilename()
 
-
         if self.starting_data_path != "":
             self.new_exp.grid_forget()
             self.new_data_df = pd.read_csv(str(starting_data_path))
@@ -492,7 +491,8 @@ class LaneFireGUI:
         self.bofire_ask_scr.grid()
         self.candidates = LaneFire.bofire_ask_update(self.new_domain, self.cleaned_input_data,
                                                      int(self.asks_wheel.get()))
-        self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates).grid()
+        print(self.candidates.to_string())
+        self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates.to_string()).grid()
 
         """
         Need to refactor this during the new experiment screen

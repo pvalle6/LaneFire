@@ -81,8 +81,11 @@ def plot_candidates(experiment):
     combined_predictions = pd.concat([experiment.original_provided_exp, experiment.list_predictions[0]],
                                      ignore_index=True)
 
-    f, axes = plt.subplots(experiment.var_n, experiment.obj_n, sharex=True, clear=True, sharey=True)
+    f, axes = plt.subplots(experiment.var_n, experiment.obj_n, sharex=True, clear=True, sharey=False)
 
+    """
+    axes is a numpy array of var_n x obj_n 
+    """
     f.set_figheight(5)
     f.set_figwidth(15)
 
@@ -92,14 +95,12 @@ def plot_candidates(experiment):
     axis_iter = 0
     for var_iter in range(experiment.var_n):
         for obj_iter in range(experiment.obj_n):
-            axes[axis_iter].errorbar(combined_predictions.loc[:, combined_predictions.columns[var_iter]],
-                                     combined_predictions.loc[:,
+            axes[var_iter][obj_iter].errorbar(x=combined_predictions.loc[:, combined_predictions.columns[var_iter]],
+                                     y=combined_predictions.loc[:,
                                      combined_predictions.columns[obj_iter+experiment.var_n]],
-                                     combined_predictions.loc[:,
+                                     yerr=combined_predictions.loc[:,
                                      combined_predictions.columns[experiment.var_n+experiment.obj_n+obj_iter]],
                                      linestyle='None', marker="^")
-            axis_iter += 1
-        axis_iter += 1
 
     plt.xlabel("x")
     plt.show()
@@ -182,18 +183,18 @@ def bofire_setup_pipe(lane_fire_param):
     x1 = ContinuousInput(key=lane_fire_param.var_names[0], bounds=lane_fire_param.var_bound_tuples[0])
     input_features = Inputs(features=[x1])
 
-    if len(lane_fire_param.var_bound_tuples) >= 2:
+    if len(lane_fire_param.var_names) >= 2:
         x2 = ContinuousInput(key=lane_fire_param.var_names[1], bounds=lane_fire_param.var_bound_tuples[1])
     if len(lane_fire_param.var_bound_tuples) >= 3:
         x3 = ContinuousInput(key=lane_fire_param.var_names[2], bounds=lane_fire_param.var_bound_tuples[2])
         input_features = Inputs(features=[x1, x2, x3])
-    if len(lane_fire_param.var_bound_tuples) >= 4:
+    if len(lane_fire_param.var_names) >= 4:
         x4 = ContinuousInput(key=lane_fire_param.var_names[3], bounds=lane_fire_param.var_bound_tuples[3])
         input_features = Inputs(features=[x1, x2, x3, x4])
-    if len(lane_fire_param.var_bound_tuples) >= 5:
+    if len(lane_fire_param.var_names) >= 5:
         x5 = ContinuousInput(key=lane_fire_param.var_names[4], bounds=lane_fire_param.var_bound_tuples[4])
         input_features = Inputs(features=[x1, x2, x3, x4, x5])
-    if len(lane_fire_param.var_bound_tuples) >= 6:
+    if len(lane_fire_param.var_names) >= 6:
         print("TOO MANY INDEPENDENT VARIABLES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
 
     """
@@ -207,7 +208,7 @@ def bofire_setup_pipe(lane_fire_param):
     optimization desired for each objective. 
     """
 
-    if len(lane_fire_param.obj_bound_tuples) >= 1:
+    if len(lane_fire_param.obj_names) >= 1:
         if lane_fire_param.list_opt_types[0] == 1:
             objective1 = MaximizeObjective(
                 w=lane_fire_param.list_obj_weights[0],
@@ -227,7 +228,7 @@ def bofire_setup_pipe(lane_fire_param):
 
         output_features = Outputs(features=[y1])
 
-    if len(lane_fire_param.obj_bound_tuples) >= 2:
+    if len(lane_fire_param.obj_names) >= 2:
         if lane_fire_param.list_opt_types[1] == 1:
             objective2 = MaximizeObjective(
                 w=lane_fire_param.list_obj_weights[1],
@@ -246,7 +247,7 @@ def bofire_setup_pipe(lane_fire_param):
             y2 = ContinuousOutput(key=lane_fire_param.obj_names[1], objective=objective2)
 
         output_features = Outputs(features=[y1, y2])
-    if len(lane_fire_param.obj_bound_tuples) >= 3:
+    if len(lane_fire_param.obj_names) >= 3:
         if lane_fire_param.list_opt_types[2] == 1:
             objective3 = MaximizeObjective(
                 w=lane_fire_param.list_obj_weights[2],
@@ -265,7 +266,7 @@ def bofire_setup_pipe(lane_fire_param):
             y3 = ContinuousOutput(key=lane_fire_param.obj_names[2], objective=objective3)
 
         output_features = Outputs(features=[y1, y2, y3])
-    if len(lane_fire_param.obj_bound_tuples) >= 4:
+    if len(lane_fire_param.obj_names) >= 4:
         if lane_fire_param.list_opt_types[3] == 1:
             objective4 = MaximizeObjective(
                 w=lane_fire_param.list_obj_weights[3],
@@ -283,7 +284,7 @@ def bofire_setup_pipe(lane_fire_param):
                 exponent=1)
             y4 = ContinuousOutput(key=lane_fire_param.obj_names[3], objective=objective4)
         output_features = Outputs(features=[y1, y2, y3, y4])
-    if len(lane_fire_param.obj_bound_tuples) >= 5:
+    if len(lane_fire_param.obj_names) >= 5:
         if lane_fire_param.list_opt_types[4] == 1:
             objective5 = MaximizeObjective(
                 w=lane_fire_param.list_obj_weights[4],
@@ -302,7 +303,7 @@ def bofire_setup_pipe(lane_fire_param):
             y5 = ContinuousOutput(key=lane_fire_param.obj_names[4], objective=objective5)
         output_features = Outputs(features=[y1, y2, y3, y4, y5])
 
-    if len(lane_fire_param.obj_bound_tuples) >= 6:
+    if len(lane_fire_param.obj_names) >= 6:
         print("TOO MANY OBJECTIVES; HIGHER DIMENSIONALITY NOT YET IMPLEMENTED")
     """
        No further objectives are included as I don't think there is a situation that needs this much
