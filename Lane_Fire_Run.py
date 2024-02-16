@@ -301,7 +301,7 @@ class LaneFireGUI:
         self.use_clean_data.grid()
         self.data_description = "Number of Variables: {0} \n Number of Objectives: {1}".format(
             self.len_var, self.len_obj-self.len_var)
-        print(self.data_description)
+        # print(self.data_description)
 
     def clean_data(self, dc_input_param):
         """
@@ -483,7 +483,7 @@ class LaneFireGUI:
             list_opt_types=self.obj_type,
             obj_targets=self.target_list
         )
-        print(new_param.list_obj_weights)
+        #print(new_param.list_obj_weights)
         self.new_domain = LaneFire.bofire_setup_pipe(new_param)
 
     def run_new_bofire(self):
@@ -491,7 +491,7 @@ class LaneFireGUI:
         self.bofire_ask_scr.grid()
         self.candidates = LaneFire.bofire_ask_update(self.new_domain, self.cleaned_input_data,
                                                      int(self.asks_wheel.get()))
-        print(self.candidates.to_string())
+        # print(self.candidates.to_string())
         self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates.to_string()).grid()
 
         """

@@ -80,11 +80,12 @@ def plot_candidates(experiment):
     """
     combined_predictions = pd.concat([experiment.original_provided_exp, experiment.list_predictions[0]],
                                      ignore_index=True)
-
+    combined_predictions.fillna(0, inplace=True)
+    print(combined_predictions.to_string())
     f, axes = plt.subplots(experiment.var_n, experiment.obj_n, sharex=True, clear=True, sharey=False)
 
     """
-    axes is a numpy array of var_n x obj_n 
+    axes is a numpy array of var_n x obj_n obj_iter+experiment.var_n
     """
     f.set_figheight(5)
     f.set_figwidth(15)
@@ -93,13 +94,13 @@ def plot_candidates(experiment):
     Here, every var and obj needs to be plotted along side predictions of each other and the standard error bars
     """
     axis_iter = 0
-    for var_iter in range(experiment.var_n):
-        for obj_iter in range(experiment.obj_n):
+    for var_iter in range(experiment.var_n): # 2
+        for obj_iter in range(experiment.obj_n): # 2
             axes[var_iter][obj_iter].errorbar(x=combined_predictions.loc[:, combined_predictions.columns[var_iter]],
                                      y=combined_predictions.loc[:,
                                      combined_predictions.columns[obj_iter+experiment.var_n]],
                                      yerr=combined_predictions.loc[:,
-                                     combined_predictions.columns[experiment.var_n+experiment.obj_n+obj_iter]],
+                                          combined_predictions.columns[experiment.var_n+(3*experiment.obj_n)+obj_iter]],
                                      linestyle='None', marker="^")
 
     plt.xlabel("x")
