@@ -39,7 +39,7 @@ class LaneFireGUI:
         self.splash.grid(column=0, row=0)
         self.welcome_msg = tk.Label(self.splash, text=wlkom_msg).grid()
 
-        self.start_button = tk.Button(self.splash, text="Start", command=self.start_question_de).grid()
+        self.start_button = tk.Button(self.splash, text="Start", command=self.start_lanefire).grid()
 
         """
         The window for selecting an option for new experiment or loading old one
@@ -57,7 +57,7 @@ class LaneFireGUI:
         self.start_rb_1.pack()
         self.start_rb_2.pack()
 
-        self.start_select_act = tk.Button(self.start_q_canvas, text="Begin", command=self.start_select_do)
+        self.start_select_act = tk.Button(self.start_q_canvas, text="Begin", command=self.start_run_type)
         self.start_select_act.pack()
 
     #
@@ -94,7 +94,7 @@ class LaneFireGUI:
         self.get_data_button = tk.Button(self.new_exp,
                                          text="Choose a starting data file", command=self.start_new_exp).grid()
         self.use_same_data_button = tk.Button(self.new_exp,
-                                              text="Use last opened data", command=self.same_data).grid()
+                                              text="Use last opened data", command=self.load_same_data).grid()
 
         self.new_exp_error = tk.Label(self.new_exp, text="You must choose a file with data to continue!")
 
@@ -209,13 +209,13 @@ class LaneFireGUI:
         self.bf_ask_header_two = tk.Label(self.bofire_ask_scr, text="Informed Candidates").grid()
         self.bf_ask_results = tk.Label(self.bofire_ask_scr)
         self.save_exp_new = tk.Button(self.bofire_ask_scr, text="Save Experiment to PKL", command=self.save_pickle)
-        # self.plot_new = tk.Button(self.bofire_ask_scr, text="Plot Experiment Suggestion", command=self.plot_with)
+        self.plot_new = tk.Button(self.bofire_ask_scr, text="Plot Experiment Suggestion", command=self.plot_data)
 
-    def start_question_de(self):
+    def start_lanefire(self):
         self.splash.grid_forget()
         self.start_q_canvas.grid()
 
-    def start_select_do(self):
+    def start_run_type(self):
         self.start_q_canvas.grid_forget()
 
         if self.start_choice.get() == 0:
@@ -223,7 +223,7 @@ class LaneFireGUI:
         elif self.start_choice.get() == 1:
             self.load_exp.grid()  # opens screen to open previous experiment
 
-    def same_data(self):
+    def load_same_data(self):
         """
         Uses the same path previously used for loading data
         :return:
@@ -494,6 +494,9 @@ class LaneFireGUI:
                                                      int(self.asks_wheel.get()))
         self.bf_ask_results = tk.Label(self.bofire_ask_scr, text=self.candidates).grid()
 
+        """
+        Need to refactor this during the new experiment screen
+        """
         self.current_experiment = LaneFire.Experiment()
         self.current_experiment.original_provided_exp = self.cleaned_input_data
         self.current_experiment.list_predictions.append(self.candidates)
@@ -501,7 +504,7 @@ class LaneFireGUI:
         self.current_experiment.obj_n = self.len_obj - self.len_var
         self.current_experiment.domain = self.new_domain
         self.save_exp_new.grid()
-        # self.plot_new.grid()
+        self.plot_new.grid()
 
     def run_old_bofire(self):
         self.bofire_ask_scr.grid()
@@ -545,12 +548,12 @@ class LaneFireGUI:
 
     def plot_data(self):
         """
-        Plots an experiment run
+        Plots an experiment run with candidates
 
         needs to implement scaling
         :return:
         """
-        LaneFire.print_wo(self.current_experiment.original_provided_exp)
+        LaneFire.plot_candidates(self.current_experiment)
 
     # def plot_with(self):
     #     """
