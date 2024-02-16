@@ -185,7 +185,8 @@ def bofire_setup_pipe(lane_fire_param):
 
     if len(lane_fire_param.var_names) >= 2:
         x2 = ContinuousInput(key=lane_fire_param.var_names[1], bounds=lane_fire_param.var_bound_tuples[1])
-    if len(lane_fire_param.var_bound_tuples) >= 3:
+        input_features = Inputs(features=[x1, x2])
+    if len(lane_fire_param.var_names) >= 3:
         x3 = ContinuousInput(key=lane_fire_param.var_names[2], bounds=lane_fire_param.var_bound_tuples[2])
         input_features = Inputs(features=[x1, x2, x3])
     if len(lane_fire_param.var_names) >= 4:
